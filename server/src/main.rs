@@ -1,10 +1,10 @@
+use axum::Router;
 use std::net::SocketAddr;
-
-use axum::{response::Html, routing::get, Router};
+use tower_http::services::ServeDir;
 
 #[tokio::main]
 async fn main() {
-    let app = Router::new().route("/", get(handler));
+    let app = static_frontend();
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
 
@@ -16,6 +16,8 @@ async fn main() {
         .unwrap();
 }
 
-async fn handler() -> Html<&'static str> {
-    Html("<h1>Hello, world!</h1>")
+fn static_frontend() -> Router {
+    let static_frontend_dir = ServeDir::new("../client/build");
+
+    Router::new().nest_service("/", static_frontend_dir)
 }
